@@ -20,7 +20,7 @@ app.use(passport.session());
 //IMPORTING ROUTES
 const authRoute = require("./routes/auth");
 
-app.use("/api/v1/auth", authRoute);
+app.use("/api/auth", authRoute);
 
 
 //ROUTES
