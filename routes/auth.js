@@ -4,11 +4,14 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 const User = require("../models/User");
+const RefreshToken = require("../models/RefreshToken");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { registerValidation, loginValidation } = require("../validation");
+
+
 
 //GOOGLE OAUTH
 router.get(
@@ -90,8 +93,20 @@ router.post("/login", async (req, res) => {
   if (!validPass) return res.status(401).json("Invalid Password");
 
   //Create and json JWT token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  res.header("jwt-token", token).json(token);
+  const accessToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {expiresIn: "15m"});
+  const refreshToken = jwt.sign({_id: user._id}, process.env.REFRESH_TOKEN_SECRET);
+
+  newRefreshToken = new RefreshToken({
+    token: refreshToken
+  })
+
+  try{
+    newRefreshToken.save()
+    res.json({accessToken: accessToken, refreshToken: refreshToken});
+  }catch(err){
+    console.log(err.message)
+  }
+ 
 });
 
 router.post("/forgot", async (req, res) => {
@@ -147,5 +162,33 @@ router.post("/reset", async (req, res) => {
   }
 });
 
+router.post("/token", (req, res) => {
+  const {refreshToken} = req.body
+  if (!refreshToken) return res.status(401).json("No Token");
+  try {
+    RefreshToken.findOne({ token: refreshToken }, (err, doc) => {
+      if(doc === null) return res.status(401).json("Token Not Found");
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, _id) => {
+        if(err) return res.status(401).json("Token Invalid");
+        const newAccessToken = jwt.sign({ _id }, process.env.TOKEN_SECRET, {
+          expiresIn: "15s",
+        });
+        res.json({ accessToken: newAccessToken });
+      });
+    });
+  } catch (err) {
+    res.status(401).json("Oops something went wrong!");
+  }
+})
+
+router.delete("/logout", async(req, res) => {
+  const refreshToken = req.body.refreshToken
+  try{
+    await RefreshToken.deleteOne({token: refreshToken})
+    res.status(200).json("Token Removed")
+  }catch(err){
+    res.status(401).json({ message: err.message });
+  }
+})
 
 module.exports = router;
