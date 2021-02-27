@@ -47,6 +47,6 @@ app.get("/protected", private, (req, res) => {
 
 ## How to refresh an accessToken
 
-accessTokens are set to expire after 15mins. To refresh your accessToken send the refreshToken to the /api/auth/token route.
+accessTokens are set to expire after 15mins. To refresh your accessToken post the refreshToken to the /api/auth/token route.
 
 As simple as it gets :)
