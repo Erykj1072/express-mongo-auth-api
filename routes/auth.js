@@ -60,13 +60,14 @@ router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  //Create new user
+  //Create new user object
   const user = new User({
     username,
     email,
     password: hashedPassword,
   });
   try {
+    //Save user object to collection
     const savedUser = await user.save();
     //Return user object id
     res.status(200).json({ user: user._id });
@@ -96,12 +97,15 @@ router.post("/login", async (req, res) => {
   const accessToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {expiresIn: "15m"});
   const refreshToken = jwt.sign({_id: user._id}, process.env.REFRESH_TOKEN_SECRET);
 
+  //Create a new refresh token object
   newRefreshToken = new RefreshToken({
     token: refreshToken
   })
 
   try{
+    //Save refresh token object to collection
     newRefreshToken.save()
+    //Return access and refresh tokens
     res.json({accessToken: accessToken, refreshToken: refreshToken});
   }catch(err){
     console.log(err.message)
@@ -109,10 +113,13 @@ router.post("/login", async (req, res) => {
  
 });
 
+//FORGOT PASSWORD
 router.post("/forgot", async (req, res) => {
+  //Create reset token
   const resetPasswordToken = await crypto.randomBytes(32).toString("hex");
   const { email } = req.body;
   try {
+    //Update user object with token
     await User.findOneAndUpdate(
       { email },
       {
@@ -120,7 +127,7 @@ router.post("/forgot", async (req, res) => {
       },
       { useFindAndModify: false }
     );
-
+    
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -145,11 +152,14 @@ router.post("/forgot", async (req, res) => {
   }
 });
 
+//RESET PASSWORD
 router.post("/reset", async (req, res) => {
-  //Hash password
   const { resetPasswordToken, password } = req.body;
+
+  //Salt and hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
+  //Update object with new password
   try {
     await User.findOneAndUpdate(
       { resetPasswordToken },
@@ -162,17 +172,22 @@ router.post("/reset", async (req, res) => {
   }
 });
 
+//REFRESH ACCESS TOKEN
 router.post("/token", (req, res) => {
   const {refreshToken} = req.body
   if (!refreshToken) return res.status(401).json("No Token");
   try {
+    //Check if refresh token exists
     RefreshToken.findOne({ token: refreshToken }, (err, doc) => {
       if(doc === null) return res.status(401).json("Token Not Found");
+      //Verify refresh token
       jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if(err) return res.status(401).json("Token Invalid");
+        //Create new access token
         const newAccessToken = jwt.sign({ _id : user._id}, process.env.TOKEN_SECRET, {
           expiresIn: "15m",
         });
+        //Return new access token
         res.json({ accessToken: newAccessToken });
       });
     });
@@ -181,9 +196,11 @@ router.post("/token", (req, res) => {
   }
 })
 
+//LOGOUT
 router.delete("/logout", async(req, res) => {
   const refreshToken = req.body.refreshToken
   try{
+    //Delete refresh token from collection
     await RefreshToken.deleteOne({token: refreshToken})
     res.status(200).json("Token Removed")
   }catch(err){
