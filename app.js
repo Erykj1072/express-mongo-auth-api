@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
-
+const private = require("./routes/private")
 
 //MIDDLEWARES
 
@@ -25,6 +25,10 @@ app.use("/api/auth", authRoute);
 
 //ROUTES
 app.get("/", (req, res) => {
+  res.json("Welcome to auth API");
+});
+
+app.get("/protected", private, (req, res) => {
   res.json("Welcome to auth API");
 });
 
