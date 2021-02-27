@@ -168,10 +168,10 @@ router.post("/token", (req, res) => {
   try {
     RefreshToken.findOne({ token: refreshToken }, (err, doc) => {
       if(doc === null) return res.status(401).json("Token Not Found");
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, _id) => {
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if(err) return res.status(401).json("Token Invalid");
-        const newAccessToken = jwt.sign({ _id }, process.env.TOKEN_SECRET, {
-          expiresIn: "15s",
+        const newAccessToken = jwt.sign({ _id : user._id}, process.env.TOKEN_SECRET, {
+          expiresIn: "15m",
         });
         res.json({ accessToken: newAccessToken });
       });

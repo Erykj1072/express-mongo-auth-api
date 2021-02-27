@@ -29,7 +29,8 @@ app.get("/", (req, res) => {
 });
 
 app.get("/protected", private, (req, res) => {
-  res.json("Welcome to auth API");
+  const user = req.user._id
+  res.json("Welcome to protected route user: " + user);
 });
 
 // DB CONNECTION
