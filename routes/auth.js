@@ -1,53 +1,15 @@
 require("dotenv/config");
-require("../services/passport");
 const express = require("express");
 const router = express.Router();
-const passport = require("passport");
 const User = require("../models/User");
 const RefreshToken = require("../models/RefreshToken");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const { registerValidation, loginValidation } = require("../validation");
 
-
-
-//GOOGLE OAUTH
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    //Create and json JWT token
-    const token = jwt.sign({ _id: req.user._id }, process.env.TOKEN_SECRET);
-    res.header("auth-token", token).json({ message: "Successfuly Signed In!" });
-  }
-);
-
-//FACEBOOK OAUTH
-router.get("/facebook", passport.authenticate("facebook"));
-
-router.get(
-  "/facebook/callback",
-  passport.authenticate("facebook", { failureRedirect: "/login" }),
-  function (req, res) {
-    //Create and json JWT token
-    const token = jwt.sign({ _id: req.user._id }, process.env.TOKEN_SECRET);
-    res.header("auth-token", token).json({ message: "Successfuly Signed In!" });
-  }
-);
-
-// LOCAL AUTHENTICATION
 //REGISTER
 router.post("/register", async (req, res) => {
-  //Validate details
-  const { error } = registerValidation(req.body);
-  if (error) return res.status(401).json(error.details[0].message);
 
   //Store req.body data
   const { username, email, password } = req.body;
@@ -55,6 +17,8 @@ router.post("/register", async (req, res) => {
   //Check if email exists
   const emailExists = await User.findOne({ email });
   if (emailExists) return res.status(401).json("Email already exists");
+  
+  
 
   //Hash password
   const salt = await bcrypt.genSalt(10);
@@ -78,9 +42,6 @@ router.post("/register", async (req, res) => {
 
 //LOGIN
 router.post("/login", async (req, res) => {
-  //Validate details
-  const { error } = loginValidation(req.body);
-  if (error) return res.status(401).json(error.details[0].message);
 
   //Store req.body data
   const { email, password } = req.body;
@@ -137,7 +98,7 @@ router.post("/forgot", async (req, res) => {
     });
 
     const mailOptions = {
-      from: "someemail@gmail.com",
+      from: "erykjagla4@gmail.com",
       to: email,
       subject: "Password Reset",
       text:
