@@ -3,9 +3,8 @@
 I personally tend to reuse this code alot when I'm starting new projects... so here it is take it... at your own risk of course.
 
 ## Includes
- 
-* Passport Authentication: Google, Facebook.
-* Local Authentication: Login, Register, Email Password Reset.
+
+* Authentication: Login, Register, Email Password Reset.
 * JWT Access and Refresh Tokens.
 * Private route middleware.
 
@@ -17,10 +16,8 @@ I personally tend to reuse this code alot when I'm starting new projects... so h
 DB_CONNECTION=<mongo-uri>
 TOKEN_SECRET=<random-string>
 REFRESH_TOKEN_SECRET=<random-string>
-GOOGLE_CLIENT_ID=<XXXXXXXXXX>
-GOOGLE_CLIENT_SECRET=<XXXXXXXXX>
-FACEBOOK_CLIENT_ID=<XXXXXXXXXX>
-FACEBOOK_CLIENT_SECRET=<XXXXXXXXXX>
+EMAIL_ID=<gmail>
+EMAIL_SECRET=<gmail>
 ```
 ### Install all the neccessary packages
 
