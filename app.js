@@ -15,6 +15,7 @@ app.use(express.json());
 // app.use(express.urlencoded({extended: false}))
 
 app.use(passport.initialize());
+
 app.use(passport.session());
 
 //IMPORTING ROUTES
@@ -25,12 +26,17 @@ app.use("/api/auth", authRoute);
 
 //ROUTES
 app.get("/", (req, res) => {
+
   res.json("Welcome to auth API");
+
 });
 
 app.get("/protected", private, (req, res) => {
+
   const user = req.user._id
+
   res.json("Welcome to protected route user: " + user);
+
 });
 
 // DB CONNECTION
