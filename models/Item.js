@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const ItemSchema = new mongoose.Schema({
-  userId: {
+  businessId: {
     type: mongoose.Types.ObjectId,
   },
   title: {

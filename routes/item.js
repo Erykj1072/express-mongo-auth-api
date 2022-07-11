@@ -3,12 +3,12 @@ const Item = require("../models/Item");
 const router = express.Router();
 const mongoose = require("mongoose");
 //CREATE
-router.post("/", async (req, res) => {
-  const { userId, title, body, stock, price, photo, diet, type } = req.body;
+router.post("/createByBusiness", async (req, res) => {
+  const { businessId, title, body, stock, price, photo, diet, type } = req.body;
 
   //Create new order object
   const item = new Item({
-    userId,
+    businessId,
     title,
     body,
     stock,
@@ -31,10 +31,13 @@ router.post("/", async (req, res) => {
 });
 
 //GET ALL
-router.get("/", async (req, res) => {
+router.get("/getAllByBusiness/:id", async (req, res) => {
+  const businessId = req.params.id;
   try {
     //Get all items with that date
-    const allItems = await Item.find();
+    const allItems = await Item.find({
+      businessId: mongoose.Types.ObjectId(businessId),
+    });
 
     //Return Item success message and items
     res.status(200).json({ allItems });
@@ -45,12 +48,15 @@ router.get("/", async (req, res) => {
 });
 
 //GET BY ID
-router.get("/:id", async (req, res) => {
-  const filter = req.params.id;
-
+router.get("/getOneByBusiness/:businessId/:itemId", async (req, res) => {
+  const { businessId, itemId } = req.params;
+  console.log(businessId, itemId);
   try {
     //Get item by ID
-    const item = await Item.findById(filter);
+    const item = await Item.find({
+      businessId: mongoose.Types.ObjectId(businessId),
+      _id: mongoose.Types.ObjectId(itemId),
+    });
 
     //Return order success message and order
     res.status(200).json({ item });
@@ -61,15 +67,22 @@ router.get("/:id", async (req, res) => {
 });
 
 //UPDATE BY ID
-router.patch("/id", async (req, res) => {
-  const itemId = req.params;
+router.patch("/updateByBusiness/:businessId/:itemId", async (req, res) => {
+  const { businessId, itemId } = req.params;
+  const content = req.body;
 
   try {
     //Delete item by ID
-    await Order.remove({ _id: itemId });
+    await Item.findOneAndUpdate(
+      {
+        businessId: mongoose.Types.ObjectId(businessId),
+        _id: mongoose.Types.ObjectId(itemId),
+      },
+      content
+    );
 
     //Return item success message
-    res.status(200).json({ message: success });
+    res.status(200).json({ message: "success" });
   } catch (err) {
     //Return error message
     res.status(401).json({ message: err.message });
@@ -77,15 +90,18 @@ router.patch("/id", async (req, res) => {
 });
 
 //DELETE BY ID
-router.delete("/remove/id", async (req, res) => {
-  const itemId = req.params;
+router.delete("/removeByBusiness/:businessId/:itemId", async (req, res) => {
+  const { businessId, itemId } = req.params;
 
   try {
     //Delete item by ID
-    await Order.remove({ _id: itemId });
+    await Item.remove({
+      businessId: mongoose.Types.ObjectId(businessId),
+      _id: mongoose.Types.ObjectId(itemId),
+    });
 
     //Return item success message
-    res.status(200).json({ message: success });
+    res.status(200).json({ message: "success" });
   } catch (err) {
     //Return error message
     res.status(401).json({ message: err.message });

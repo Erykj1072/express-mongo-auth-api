@@ -53,7 +53,7 @@ router.post("/", async (req, res) => {
 });
 
 //GET ALL BY USER ID
-router.get("/findByBusiness/:id", async (req, res) => {
+router.get("/getAllByBusiness/:id", async (req, res) => {
   const businessId = req.params.id;
   console.log(userId);
   try {
