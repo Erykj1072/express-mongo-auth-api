@@ -7,10 +7,10 @@ const router = express.Router();
 var mongoose = require("mongoose");
 //CREATE
 router.post("/", async (req, res) => {
-  const { userId, items, destination, status, type } = req.body;
+  const { businessId, userId, items, destination, status, type } = req.body;
 
-  //Create new order object
   const order = new Order({
+    businessId,
     userId,
     items,
     destination,
@@ -20,6 +20,7 @@ router.post("/", async (req, res) => {
 
   const idExtract = items.map((item) => item._id);
   const orderItems = await Item.find({ _id: { $in: idExtract } });
+
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -51,12 +52,15 @@ router.post("/", async (req, res) => {
   }
 });
 
-//GET ALL
-router.get("/", async (req, res) => {
+//GET ALL BY USER ID
+router.get("/findByBusiness/:id", async (req, res) => {
+  const businessId = req.params.id;
+  console.log(userId);
   try {
     //Get all orders with that date
-    const allOrders = await Order.find();
-
+    const allOrders = await Order.find({
+      businessId: mongoose.Types.ObjectId(businessId),
+    });
     //Return order success message and orders
     res.status(200).json({ allOrders });
   } catch (err) {
@@ -65,13 +69,13 @@ router.get("/", async (req, res) => {
   }
 });
 
-//GET BY ID
-router.get("/id", async (req, res) => {
-  const filter = req.params;
+// GET BY ID
+router.get("/findByUser/:id", async (req, res) => {
+  const userId = req.params.id;
 
   try {
     //Get order by ID
-    const order = await Order.findById(filter);
+    const order = await Order.find({ userId: mongoose.Types.ObjectId(userId) });
 
     //Return order success message and order
     res.status(200).json({ order });
@@ -82,15 +86,15 @@ router.get("/id", async (req, res) => {
 });
 
 //DELETE BY ID
-router.delete("/remove/id", async (req, res) => {
-  const orderId = req.params;
+router.delete("/removeOne/:id", async (req, res) => {
+  const orderId = req.params.id;
 
   try {
     //Delete order by ID
-    await Order.remove({ _id: orderId });
+    await Order.remove({ _id: mongoose.Types.ObjectId(orderId) });
 
     //Return order success message
-    res.status(200).json({ message: success });
+    res.status(200).json({ message: "success" });
   } catch (err) {
     //Return error message
     res.status(401).json({ message: err.message });

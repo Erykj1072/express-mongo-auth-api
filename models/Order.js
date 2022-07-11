@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const OrderSchema = new mongoose.Schema({
+  businessId: {
+    type: mongoose.Types.ObjectId,
+  },
   userId: {
     type: mongoose.Types.ObjectId,
   },
