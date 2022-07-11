@@ -2,42 +2,24 @@ require("dotenv/config");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const cors = require("cors");
-const passport = require("passport");
-const private = require("./routes/private")
 
-//MIDDLEWARES
-
-//cors allows for cross domain api requests
-app.use(cors());
-//express.json parses req.body to json
+const SERVER_PORT = process.env.PORT || 4000;
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// app.use(express.urlencoded({extended: false}))
+// app.use((req, res, next) => {
+//   res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+//   res.setHeader("Pragma", "no-cache");
+//   res.setHeader("Expires", "0");
+//   next();
+// });
 
-app.use(passport.initialize());
-
-app.use(passport.session());
-
-//IMPORTING ROUTES
+const orderRoute = require("./routes/order");
+const itemRoute = require("./routes/item");
 const authRoute = require("./routes/auth");
 
+app.use("/api/order", orderRoute);
+app.use("/api/item", itemRoute);
 app.use("/api/auth", authRoute);
-
-
-//ROUTES
-app.get("/", (req, res) => {
-
-  res.json("Welcome to auth API");
-
-});
-
-app.get("/protected", private, (req, res) => {
-
-  const user = req.user._id
-
-  res.json("Welcome to protected route user: " + user);
-
-});
 
 // DB CONNECTION
 mongoose.connect(
@@ -46,7 +28,6 @@ mongoose.connect(
   () => console.log("DB CONNECTED")
 );
 
-const SERVER_PORT = process.env.PORT || 4000
-
-
-app.listen(SERVER_PORT, () => console.log(`SERVER RUNNING ON PORT ${SERVER_PORT}`));
+app.listen(SERVER_PORT, () =>
+  console.log(`SERVER RUNNING ON PORT ${SERVER_PORT}`)
+);
